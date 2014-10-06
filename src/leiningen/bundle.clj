@@ -1,10 +1,7 @@
 (ns leiningen.bundle
   (:require [leiningen.bundle.util :as util]
-           ;; [leiningen.bundle.http :as http]
-            [clj-ssh.ssh :as ssh]
             [obr-clj.core :as obr]
-            [clojure.java.io :as io]
-            [leiningen.pom :as pom]))
+            [clojure.java.io :as io]))
 
 (defn- help
   "Prints a help message to standard out."
@@ -18,28 +15,13 @@
   (let [dir (first args)]
     (obr/index dir)))
 
-(defn- scp-repo
-  "SCPs the given repository data to the given host at the given path."
-  [repo project]
-  (let [tmp-file (java.io.File/createTempFile "repo-" ".xml")
-        {:keys [host repo-path username] :or {:repo-path "repository.xml"}} (get-in project [:bundle :scp])
-        repo-path (if (.startsWith repo-path "/") repo-path (str "/" repo-path))]
-    ;; write the repo to the temporary file
-    (with-open [wrtr (io/writer tmp-file)]
-      (obr/write-repo repo wrtr))
-    ;; copy the repo to the remote server
-    (let [agent (ssh/ssh-agent {})]
-      (let [session (ssh/session agent host {:strict-host-key-checking :no :username username})]
-        (ssh/with-connection session
-          (ssh/scp-to session (str tmp-file) repo-path))))))
-
 (defn deploy-to-obr
   "Adds this project's bundle meta data to the remote OBR."
   [project & args]
   (let [remote-obr (get-in project [:bundle :obr-url]) #_(util/obr-url project)
         bundle-url (util/bundle-url project)
         updated-repo (obr/update-repo remote-obr bundle-url)]
-    (scp-repo updated-repo project)))
+    (util/scp-repo updated-repo project)))
 
 (defn deploy
   "Deploys the project's bundle to the Maven repository and updates the remote
