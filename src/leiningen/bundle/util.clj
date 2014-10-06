@@ -1,21 +1,41 @@
 (ns leiningen.bundle.util
   (:require [clojure.string :as str]
             [leiningen.jar :as jar]
+            [leiningen.pom :as pom]
+            [leiningen.deploy :as deploy]
             [clojure.java.io :as io]
             [obr-clj.core :as obr]
             [clj-ssh.ssh :as ssh]))
 
+(defn deploy-repo
+  "Returns the URL (as string) of the deploy repository (either \"releases\" or
+  \"snapshots\") for the project"
+  [project]
+  (let [repo-type (if (pom/snapshot? project)
+                             "snapshots"
+                             "releases")]
+    (->> (:repositories project)
+         (filter #(= (first %) repo-type))
+         first
+         second
+         :url)))
+
 (defn maven-artifact-url
-  "Returns a string of the URL to the artifact for the given repository path
-and artifact metadata."
-  [repo-path group-id artifact-id version]
-  (let [group-path (->> (str/split group-id #"\.")
-                        (interpose "/")
-                        (apply str))
-        jar-name (str artifact-id "-" version ".jar")]
-    (->> [repo-path group-path artifact-id version jar-name]
-         (interpose "/")
-         (apply str))))
+  "Returns a string of the URL to the artifact."
+  ([repo-path group-id artifact-id version]
+   (let [group-path (->> (str/split group-id #"\.")
+                         (interpose "/")
+                         (apply str))
+         jar-name (str artifact-id "-" version ".jar")]
+     (->> [repo-path group-path artifact-id version jar-name]
+          (interpose "/")
+          (apply str))))
+  ([project]
+   (let [repo-path (deploy-repo project)
+         group-id (:group project)
+         artifact-id (:name project)
+         version (:version project)]
+     (maven-artifact-url repo-path group-id artifact-id version))))
 
 (defn uberjar-name
   "Returns a string of the uberjar name."

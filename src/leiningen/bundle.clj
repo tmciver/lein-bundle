@@ -18,9 +18,13 @@
 (defn deploy-to-obr
   "Adds this project's bundle meta data to the remote OBR."
   [project & args]
-  (let [remote-obr (get-in project [:bundle :obr-url]) #_(util/obr-url project)
-        bundle-url (util/bundle-url project)
-        updated-repo (obr/update-repo remote-obr bundle-url)]
+  (let [remote-obr-url (get-in project [:bundle :obr-url])
+        local-bundle-url (util/bundle-url project)
+        remote-bundle-url (util/maven-artifact-url project)
+        res (-> (obr/create-resource local-bundle-url)
+                (obr/set-resource-uri remote-bundle-url))
+        updated-repo (-> (obr/create-repo remote-obr-url)
+                         (obr/add-resource res))]
     (util/scp-repo updated-repo project)))
 
 (defn deploy
