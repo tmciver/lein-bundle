@@ -22,31 +22,24 @@
   "SCPs the given repository data to the given host at the given path."
   [repo project]
   (let [tmp-file (java.io.File/createTempFile "repo-" ".xml")
-        {:keys [host server-file-path repo-path username] :or {:repo-path "repository.xml"}} (get-in project [:osgi :bundle :remote-obr])
-        _ (println host)]
+        {:keys [host repo-path username] :or {:repo-path "repository.xml"}} (get-in project [:bundle :scp])
+        repo-path (if (.startsWith repo-path "/") repo-path (str "/" repo-path))]
     ;; write the repo to the temporary file
     (with-open [wrtr (io/writer tmp-file)]
       (obr/write-repo repo wrtr))
-    ;; post file to the given url
-    #_(doto (http/post url {:body (io/input-stream tmp-file)}) prn)
+    ;; copy the repo to the remote server
     (let [agent (ssh/ssh-agent {})]
       (let [session (ssh/session agent host {:strict-host-key-checking :no :username username})]
         (ssh/with-connection session
-          (ssh/scp-to session (str tmp-file) (str server-file-path "/scpd-repo.xml")))))
-    #_(let [session (ssh/session host :strict-host-key-checking :no :username username)]
-        (ssh/scp-to session tmp-file server-file-path))))
+          (ssh/scp-to session (str tmp-file) repo-path))))))
 
 (defn deploy-to-obr
   "Adds this project's bundle meta data to the remote OBR."
   [project & args]
-  (let [remote-obr (util/obr-url project)
+  (let [remote-obr (get-in project [:bundle :obr-url]) #_(util/obr-url project)
         bundle-url (util/bundle-url project)
         updated-repo (obr/update-repo remote-obr bundle-url)]
-    (scp-repo updated-repo project)
-    #_(with-open [wrtr (io/writer "updated-repo.xml")]
-      (obr/write-repo updated-repo wrtr))
-    #_(-> (doto (obr/update-repo remote-obr bundle-url) (#(prn (type %))))
-        (http/post-repo remote-obr))))
+    (scp-repo updated-repo project)))
 
 (defn deploy
   "Deploys the project's bundle to the Maven repository and updates the remote

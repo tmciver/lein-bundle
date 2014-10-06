@@ -30,12 +30,3 @@ and artifact metadata."
   "Returns this project's bundle URL as string."
   [project]
   (str "file://" (bundle-file-path project)))
-
-(defn obr-url
-  "Returns the OBR URL constructed from the project metadata."
-  [project]
-  (let [{:keys [host port repo-path] :or {:repo-path "repository.xml"}} (get-in project [:osgi :bundle :remote-obr])
-        host (if (.startsWith host "http") host (str "http://" host))
-        port (if (= port "80") "" port)
-        repo-path (if (.startsWith repo-path "/") repo-path (str "/" repo-path))]
-    (str host ":" port repo-path)))
