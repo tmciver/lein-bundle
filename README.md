@@ -1,7 +1,7 @@
 # lein-bundle
 
 A Leiningen plugin to facilitate building and deploying OSGi bundles.  The
-intention of this project is to server as a Clojure substitute for the [Maven
+intention of this project is to serve as a Clojure substitute for the [Maven
 Bundle Plugin](http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html).
 
 ## Usage
