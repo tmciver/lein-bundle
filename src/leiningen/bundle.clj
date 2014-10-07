@@ -19,7 +19,8 @@
 (defn bundle-it
   "Creates a bundle jar for this project."
   [project & args]
-  (bnd/bundle project))
+  (when (not (util/bundle-exists? project))
+    (bnd/bundle project)))
 
 (defn deploy-to-obr
   "Adds this project's bundle meta data to the remote OBR."
@@ -38,13 +39,7 @@
 OBR with the bundle's meta data."
   [project & args]
   ;; first, deploy the bundle file
-  (let [;;bundle-file (first args)
-        ;;bundle-url (io/resource bundle-file)
-        ;;resource (obr/create-resource bundle-url)
-        ;;
-        ;;repo (obr/create-repo remote-obr)
-        ]
-    (doto (util/bundle-file-path project) prn)))
+  )
 
 (defn ^{:subtasks [#'index #'bundle #'deploy #'deploy-to-obr #'help]}
   bundle
@@ -53,7 +48,7 @@ OBR with the bundle's meta data."
      (help))
   ([project subtask & args]
      (case subtask
-       "index" (obr/index (first args))
+       "index" (apply obr/index args)
        "bundle" (apply bundle-it project args)
        "deploy" (deploy project args)
        "deploy-to-obr" (deploy-to-obr project args)

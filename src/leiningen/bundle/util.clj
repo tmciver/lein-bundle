@@ -42,17 +42,22 @@
   [project]
   (str (:name project) "-" (:version project) "-standalone.jar"))
 
-(defn bundle-file-path
+(defn bundle-path
   "Returns a string of the absolute path to the bundle file."
   [project]
   ;; Currently, the bundle file has the same name as the uberjar and is located in the project root.
   ;; This will likely change in the future.
   (str (:root project) (java.io.File/separator) (uberjar-name project)))
 
+(defn bundle-exists?
+  "Returns true if the bundle jar file exists, false otherwise."
+  [project]
+  (.exists (java.io.File. (bundle-path project))))
+
 (defn bundle-url
   "Returns this project's bundle URL as string."
   [project]
-  (str "file://" (bundle-file-path project)))
+  (str "file://" (bundle-path project)))
 
 (defn scp-repo
   "SCPs the given repository data to the given host at the given path."
