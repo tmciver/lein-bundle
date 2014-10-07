@@ -19,12 +19,13 @@
 (defn bundle-it
   "Creates a bundle jar for this project."
   [project & args]
-  (when (not (util/bundle-exists? project))
-    (bnd/bundle project)))
+  (bnd/bundle project))
 
 (defn deploy-to-obr
   "Adds this project's bundle meta data to the remote OBR."
   [project & args]
+  (when (not (util/bundle-exists? project))
+    (apply bundle-it project args))
   (let [remote-obr-url (get-in project [:bundle :obr-url])
         local-bundle-url (util/bundle-url project)
         remote-bundle-url (util/maven-artifact-url project)
