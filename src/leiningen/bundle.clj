@@ -1,6 +1,7 @@
 (ns leiningen.bundle
   (:require [leiningen.bundle.util :as util]
             [obr-clj.core :as obr]
+            [leiningen.bnd :as bnd]
             [clojure.java.io :as io]))
 
 (defn- help
@@ -14,6 +15,11 @@
   [project & args]
   (let [dir (first args)]
     (obr/index dir)))
+
+(defn bundle-it
+  "Creates a bundle jar for this project."
+  [project & args]
+  (bnd/bundle project))
 
 (defn deploy-to-obr
   "Adds this project's bundle meta data to the remote OBR."
@@ -40,7 +46,7 @@ OBR with the bundle's meta data."
         ]
     (doto (util/bundle-file-path project) prn)))
 
-(defn ^{:subtasks [#'index #'deploy #'deploy-to-obr #'help]}
+(defn ^{:subtasks [#'index #'bundle #'deploy #'deploy-to-obr #'help]}
   bundle
   "Main entry point to the bnd plugin."
   ([project]
@@ -48,6 +54,7 @@ OBR with the bundle's meta data."
   ([project subtask & args]
      (case subtask
        "index" (obr/index (first args))
+       "bundle" (apply bundle-it project args)
        "deploy" (deploy project args)
        "deploy-to-obr" (deploy-to-obr project args)
        "help" (help))))
