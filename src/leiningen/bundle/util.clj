@@ -73,3 +73,19 @@
       (let [session (ssh/session agent host {:strict-host-key-checking :no :username username})]
         (ssh/with-connection session
           (ssh/scp-to session (str tmp-file) repo-path))))))
+
+(defn project-identifier
+  "Returns a string of the form \"<group-id>/<project-name>\""
+  [project]
+  (str (:group project) "/" (:name project)))
+
+(defn deploy-bundle
+  "Deploys the project's bundle to a repository."
+  [project]
+  (let [id (project-identifier project)
+        repo (if (pom/snapshot? project)
+               "snapshots"
+               "releases")
+        version (:version project)
+        bundle-path (bundle-path project)]
+    (deploy/deploy project repo id version bundle-path)))

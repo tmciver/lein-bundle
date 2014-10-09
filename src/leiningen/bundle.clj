@@ -37,10 +37,15 @@
 
 (defn deploy
   "Deploys the project's bundle to the Maven repository and updates the remote
-OBR with the bundle's meta data."
+  OBR with the bundle's meta data."
   [project & args]
-  ;; first, deploy the bundle file
-  )
+  ;; first, make sure the bundle has been built
+  (when (not (util/bundle-exists? project))
+    (apply bundle-it project args))
+  ;; then, deploy the bundle file
+  (util/deploy-bundle project)
+  ;; then, update the OBR
+  (apply deploy-to-obr project args))
 
 (defn ^{:subtasks [#'index #'bundle #'deploy #'deploy-to-obr #'help]}
   bundle
@@ -51,6 +56,6 @@ OBR with the bundle's meta data."
      (case subtask
        "index" (apply obr/index args)
        "bundle" (apply bundle-it project args)
-       "deploy" (deploy project args)
-       "deploy-to-obr" (deploy-to-obr project args)
+       "deploy" (apply deploy project args)
+       "deploy-to-obr" (apply deploy-to-obr project args)
        "help" (help))))
