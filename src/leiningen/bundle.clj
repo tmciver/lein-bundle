@@ -2,6 +2,8 @@
   (:require [leiningen.bundle.util :as util]
             [obr-clj.core :as obr]
             [leiningen.bnd :as bnd]
+            [leiningen.pom :as pom]
+            [leiningen.deploy :as deploy]
             [clojure.java.io :as io]))
 
 (defn- help
@@ -21,7 +23,7 @@
   [project & args]
   (bnd/bundle project))
 
-(defn deploy-to-obr
+(defn deploy-meta
   "Adds this project's bundle meta data to the remote OBR."
   [project & args]
   (when (not (util/bundle-exists? project))
@@ -33,7 +35,20 @@
                 (obr/set-resource-uri remote-bundle-url))
         updated-repo (-> (obr/create-repo remote-obr-url)
                          (obr/add-resource res))]
-    (util/scp-repo updated-repo project)))
+    (util/scp-repo updated-repo project)
+    (println (str "Updated repository at " remote-obr-url " with metadata for bundle at " local-bundle-url))))
+
+(defn deploy-bundle
+  "Deploys the project's bundle to a repository."
+  [project]
+  (let [id (util/project-identifier project)
+        repo (if (pom/snapshot? project)
+               "snapshots"
+               "releases")
+        version (:version project)
+        bundle-path (util/bundle-path project)]
+    (deploy/deploy project repo id version bundle-path)
+    (println (str "Deployed bundle " bundle-path " to \"" repo "\" repository."))))
 
 (defn deploy
   "Deploys the project's bundle to the Maven repository and updates the remote
@@ -43,11 +58,11 @@
   (when (not (util/bundle-exists? project))
     (apply bundle-it project args))
   ;; then, deploy the bundle file
-  (util/deploy-bundle project)
+  (deploy-bundle project)
   ;; then, update the OBR
-  (apply deploy-to-obr project args))
+  (apply deploy-meta project args))
 
-(defn ^{:subtasks [#'index #'bundle #'deploy #'deploy-to-obr #'help]}
+(defn ^{:subtasks [#'index #'bundle #'deploy-meta #'deploy-bundle #'deploy #'help]}
   bundle
   "Main entry point to the bnd plugin."
   ([project]
@@ -56,6 +71,8 @@
      (case subtask
        "index" (apply obr/index args)
        "bundle" (apply bundle-it project args)
+       "deploy-meta" (apply deploy-meta project args)
+       "deploy-bundle" (apply deploy-bundle project args)
        "deploy" (apply deploy project args)
-       "deploy-to-obr" (apply deploy-to-obr project args)
+
        "help" (help))))
