@@ -4,6 +4,6 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :eval-in-leiningen true
-  :dependencies [[obr-clj "0.1.0-SNAPSHOT"]
-                 [lein-bnd "0.1.0-SNAPSHOT"]
+  :dependencies [[obr-clj "0.1.0"]
+                 [lein-bnd "0.1.0"]
                  [clj-ssh "0.5.11"]])
