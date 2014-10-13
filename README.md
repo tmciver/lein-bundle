@@ -6,24 +6,28 @@ Bundle Plugin](http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd
 
 ## Usage
 
-Put `[lein-bundle "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your project.clj.
+Put `[lein-bundle "0.1.0]` into the `:plugins` vector of your project.clj.
 
 Add the following metadata to your project file:
 
 ```clojure
+:bnd {"Bundle-SymbolicName" ~'com.example.mybundle
+      "Bundle-Activator" ~'com.example.mybundle.MyActivator
+      "Export-Package" [com.example.mybundle]
+      "Import-Package" [org.osgi.framework
+                       ;; other packages
+                       ]}
 :bundle {:obr-url "http://a-host.amazonaws.com:8080/repository.xml"
          :scp {:host "http://a-host.amazonaws.com"
                :repo-path "/var/www/repository.xml"
-               :username "user"}}
-:osgi {:bnd {"Bundle-SymbolicName" "com.example.my-bundle"
-             "Bundle-Activator" "com.example.my-bundle.Activator"
-             "Export-Package" [com.example.my-bundle.api]
-             "Import-Package" [...]}}
+               :username "username"}}
 ```
 
-To update the remote OBR with metadata for the project's bundle:
+The main task is 'deploy' which deploys the BND-created bundle to the
+repository named *releases* in the :repository key of the project file and also
+updates the OBR located at :obr-url with the meta data for the bundle.
 
-    $ lein bundle deploy-to-obr
+    $ lein bundle deploy
 
 Note that the implementation uses scp to update the remote OBR and this
 requires a properly configured ssh-agent on the development system.
