@@ -85,7 +85,8 @@
         backup-dir (java.io.File. (apply str (interpose (java.io.File/separator)
                                                         [user-home ".lein" "lein-bundle" "repo-backups"])))
         repo-name (or (.getName repo) "unnamed")
-        backup-name (str repo-name "-" (System/currentTimeMillis) ".xml")
+        timestamp-str (.format (java.text.SimpleDateFormat. "yyyyMMdd-HHmmss.SSS") (java.util.Date.))
+        backup-name (str repo-name "-" timestamp-str ".xml")
         backup-file (java.io.File. backup-dir backup-name)]
     ;; create backup directory
     (.mkdirs backup-dir)
