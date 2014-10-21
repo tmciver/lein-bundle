@@ -78,4 +78,20 @@
   [project]
   (str (:group project) "/" (:name project)))
 
+(defn backup-repo
+  "Writes the given Repository to the directory ~/.lein/lein-bundle/repo-backups."
+  [repo]
+  (let [user-home (System/getProperty "user.home")
+        backup-dir (java.io.File. (apply str (interpose (java.io.File/separator)
+                                                        [user-home ".lein" "lein-bundle" "repo-backups"])))
+        repo-name (or (.getName repo) "unnamed")
+        backup-name (str repo-name "-" (System/currentTimeMillis) ".xml")
+        backup-file (java.io.File. backup-dir backup-name)]
+    ;; create backup directory
+    (.mkdirs backup-dir)
+    ;; create the file
+    (.createNewFile backup-file)
+    (with-open [wrtr (io/writer backup-file)]
+      (obr/write-repo repo wrtr))))
+
 

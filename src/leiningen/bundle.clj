@@ -33,8 +33,10 @@
         remote-bundle-url (util/maven-artifact-url project)
         res (-> (obr/create-resource local-bundle-url)
                 (obr/set-resource-uri remote-bundle-url))
-        updated-repo (-> (obr/create-repo remote-obr-url)
-                         (obr/add-resource res))]
+        repo (obr/create-repo remote-obr-url)
+        updated-repo (obr/add-resource repo res)]
+    ;; backup the unaltered repo
+    (util/backup-repo repo)
     (util/scp-repo updated-repo project)
     (println (str "Updated repository at " remote-obr-url " with metadata for bundle at " local-bundle-url))))
 
@@ -74,5 +76,4 @@
        "deploy-meta" (apply deploy-meta project args)
        "deploy-bundle" (apply deploy-bundle project args)
        "deploy" (apply deploy project args)
-
        "help" (help))))
