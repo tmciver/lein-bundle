@@ -1,4 +1,4 @@
-(defproject lein-bundle "0.1.1"
+(defproject lein-bundle "0.1.2-SNAPSHOT"
   :description "A Leiningen plugin to facilitate creation and deployment of
   OSGi bundles."
   :url "https://github.com/tmciver/lein-bundle"
